@@ -14,14 +14,14 @@
 #     make flash   # to load the boot loader into flash
 #     make lock    # to protect the boot loader from overwriting
 
-F_CPU = 16000000
+F_CPU = 12000000
 DEVICE = atmega168
 # BOOTLOADER_ADDRESS is 1800 for 8k devices, 3800 for 16k and 7800 for 32k.
 BOOTLOADER_ADDRESS = 3800
 FUSEOPT = $(FUSEOPT_168)
 LOCKOPT = -U lock:w:0x2f:m
 
-PROGRAMMER = -c stk500v2 -P avrdoper
+PROGRAMMER = -c avrisp -P COM14 -b 19200 -F
 # PROGRAMMER contains AVRDUDE options to address your programmer
 
 FUSEOPT_8 = -U hfuse:w:0xc0:m -U lfuse:w:0x9f:m

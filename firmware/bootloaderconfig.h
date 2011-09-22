@@ -42,7 +42,7 @@ these macros are defined, the boot loader usees them.
 /* This is the port where the USB bus is connected. When you configure it to
  * "B", the registers PORTB, PINB and DDRB will be used.
  */
-#define USB_CFG_DMINUS_BIT      4
+#define USB_CFG_DMINUS_BIT      3
 /* This is the bit number in USB_CFG_IOPORT where the USB D- line is connected.
  * This may be any bit in the port.
  */
@@ -140,18 +140,22 @@ these macros are defined, the boot loader usees them.
 
 static inline void  bootLoaderInit(void)
 {
-    PORTD |= (1 << JUMPER_BIT);     /* activate pull-up */
-    if(!(MCUCSR & (1 << EXTRF)))    /* If this was not an external reset, ignore */
-        leaveBootloader();
-    MCUCSR = 0;                     /* clear all reset flags for next time */
+    // Conditions that bootloader comes up:
+    // 1. reset button is pushed(External Reset)
+    // 2. jump from application with MCUSR = 0
+    if (MCUSR == 0 || MCUCSR & (1<<EXTRF)) {
+        MCUCSR = 0;
+        return;
+    }
+    // go to applicaton
+    leaveBootloader();
 }
 
 static inline void  bootLoaderExit(void)
 {
-    PORTD = 0;                      /* undo bootLoaderInit() changes */
 }
 
-#define bootLoaderCondition()   ((PIND & (1 << JUMPER_BIT)) == 0)
+#define bootLoaderCondition()   (1)
 
 #endif /* __ASSEMBLER__ */
 

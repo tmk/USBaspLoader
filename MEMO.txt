@@ -1,0 +1,58 @@
+LibUSB Driver
+=============
+http://libusb-win32.sourceforge.net
+On Windows7 64bit a driver from libusb-win32-bin-1.2.2.0 can be installed
+and use AVRDUDE from WinAVR-20100110 without problem.
+
+1. Run bin/inf-wizard.exe to make *.inf and *.cat files for the device.
+2. Install the driver using these files.
+
+2011/02/17
+
+
+
+Bootloader condition
+====================
+Conditions that bootloader comes up:
+    1. reset button is pushed(External Reset)
+    2. jump from application with MCUSR = 0
+
+Defined in bootloadercofnig.h:
+static inline void  bootLoaderInit(void)
+{
+    // bootloader comes up
+    if (MCUSR == 0 || MCUCSR & (1<<EXTRF)) {
+        MCUCSR = 0;
+        return;
+    }
+    // go to applicaton
+    leaveBootloader();
+}
+
+How to jump into bootloader from application:
+void jump_bootloader(void) {
+    cli();
+    // This makes custom USBasploader come up.
+    MCUSR = 0;
+
+    // ATmega168PA
+    // initialize ports
+    PORTB = 0; PORTC= 0; PORTD = 0;
+    DDRB = 0; DDRC= 0; DDRD = 0;
+
+    // disable interrupts
+    EIMSK = 0; EECR = 0; SPCR = 0;
+    ACSR = 0; SPMCSR = 0; WDTCSR = 0; PCICR = 0;
+    TIMSK0 = 0; TIMSK1 = 0; TIMSK2 = 0;
+    ADCSRA = 0; TWCR = 0; UCSR0B = 0;
+
+    // Boot Loader Section Start Address:
+    // BOOTSZ       Size        Address
+    // (lock bit)   (word)      (word)      (byte)
+    // '11'         128         0x1F80      0x3F00
+    // '10'         256         0x1F00      0x3E00
+    // '01'         512         0x1E00      0x3C00
+    // '00'         1024        0x1C00      0x3800
+    asm volatile("jmp 0x3800");
+}
+2011/09/22
