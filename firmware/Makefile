@@ -164,6 +164,7 @@ cpp:
 ALLHEXFILES = hexfiles/mega8_12mhz.hex hexfiles/mega8_15mhz.hex hexfiles/mega8_16mhz.hex \
 	hexfiles/mega88_12mhz.hex hexfiles/mega88_15mhz.hex hexfiles/mega88_16mhz.hex hexfiles/mega88_20mhz.hex\
 	hexfiles/mega168_12mhz.hex hexfiles/mega168_15mhz.hex hexfiles/mega168_16mhz.hex hexfiles/mega168_20mhz.hex\
+	hexfiles/mega168p_12mhz.hex hexfiles/mega168p_15mhz.hex hexfiles/mega168p_16mhz.hex hexfiles/mega168p_20mhz.hex\
 	hexfiles/mega328p_12mhz.hex hexfiles/mega328p_15mhz.hex hexfiles/mega328p_16mhz.hex hexfiles/mega328p_20mhz.hex
 
 allhexfiles: $(ALLHEXFILES)

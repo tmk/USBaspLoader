@@ -14,14 +14,16 @@
 #     make flash   # to load the boot loader into flash
 #     make lock    # to protect the boot loader from overwriting
 
-F_CPU = 12000000
-DEVICE = atmega168
+F_CPU = 16000000
+DEVICE = atmega168p
 # BOOTLOADER_ADDRESS is 1800 for 8k devices, 3800 for 16k and 7800 for 32k.
 BOOTLOADER_ADDRESS = 3800
 FUSEOPT = $(FUSEOPT_168)
 LOCKOPT = -U lock:w:0x2f:m
 
-PROGRAMMER = -c avrisp -P COM14 -b 19200 -F
+PROGRAMMER = -c avrispmkII -P usb -v
+#PROGRAMMER = -c avrisp -P COM14 -b 19200 -F
+#PROGRAMMER = -c stk500pp -P /dev/ttyUSB0
 # PROGRAMMER contains AVRDUDE options to address your programmer
 
 FUSEOPT_8 = -U hfuse:w:0xc0:m -U lfuse:w:0x9f:m
@@ -98,6 +100,7 @@ FUSEOPT_328 = -U lfuse:w:0xf7:m -U hfuse:w:0xda:m -U efuse:w:0x03:m
 
 
 ###############################################################################
+TARGET = m168p
 
 # Tools:
 AVRDUDE = avrdude $(PROGRAMMER) -p $(DEVICE)
@@ -112,7 +115,7 @@ LDFLAGS = -Wl,--relax,--gc-sections -Wl,--section-start=.text=$(BOOTLOADER_ADDRE
 OBJECTS =  usbdrv/usbdrvasm.o usbdrv/oddebug.o main.o
 
 # symbolic targets:
-all: main.hex
+all: $(TARGET).hex
 
 .c.o:
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -128,7 +131,7 @@ all: main.hex
 	$(CC) $(CFLAGS) -S $< -o $@
 
 flash:	all
-	$(AVRDUDE) -U flash:w:main.hex:i
+	$(AVRDUDE) -U flash:w:$(TARGET).hex:i
 
 readflash:
 	$(AVRDUDE) -U flash:r:read.hex:i
@@ -143,19 +146,19 @@ read_fuses:
 	$(UISP) --rd_fuses
 
 clean:
-	rm -f main.hex main.bin *.o usbdrv/*.o main.s usbdrv/oddebug.s usbdrv/usbdrv.s
+	rm -f $(TARGET).hex $(TARGET).bin *.o usbdrv/*.o main.s usbdrv/oddebug.s usbdrv/usbdrv.s
 
 # file targets:
-main.bin:	$(OBJECTS)
-	$(CC) $(CFLAGS) -o main.bin $(OBJECTS) $(LDFLAGS)
+$(TARGET).bin:	$(OBJECTS)
+	$(CC) $(CFLAGS) -o $(TARGET).bin $(OBJECTS) $(LDFLAGS)
 
-main.hex:	main.bin
-	rm -f main.hex main.eep.hex
-	avr-objcopy -j .text -j .data -O ihex main.bin main.hex
-	avr-size main.hex
+$(TARGET).hex:	$(TARGET).bin
+	rm -f $(TARGET).hex $(TARGET).eep.hex
+	avr-objcopy -j .text -j .data -O ihex $(TARGET).bin $(TARGET).hex
+	avr-size $(TARGET).hex
 
-disasm:	main.bin
-	avr-objdump -d main.bin
+disasm:	$(TARGET).bin
+	avr-objdump -d $(TARGET).bin
 
 cpp:
 	$(CC) $(CFLAGS) -E main.c
@@ -177,5 +180,5 @@ $(ALLHEXFILES):
 	addr=`echo $$device | sed -e 's/\([0-9]\)8/\1/g' | awk '{printf("%x", ($$1 - 2) * 1024)}'`; \
 	echo "### Make with F_CPU=$${clock}000000 DEVICE=atmega$$device BOOTLOADER_ADDRESS=$$addr"; \
 	$(MAKE) clean; \
-	$(MAKE) main.hex F_CPU=$${clock}000000 DEVICE=atmega$$device BOOTLOADER_ADDRESS=$$addr DEFINES=-DUSE_AUTOCONFIG=1
-	mv main.hex $@
+	$(MAKE) $(TARGET).hex F_CPU=$${clock}000000 DEVICE=atmega$$device BOOTLOADER_ADDRESS=$$addr DEFINES=-DUSE_AUTOCONFIG=1
+	mv $(TARGET).hex $@

@@ -1,3 +1,16 @@
+Minimal Wiring
+==============
+Reset:      [Push SW]
+PD2, PD3:   D+, D-(Zener3.6V*2, 68Ohm*2, 1.5KOhm)
+XTAL1,2:    Crystal, [22pF*2]
+VCC,GND
+
+Toolchain
+=========
+'WinAVR-20100110':                  GOOD
+avr-gcc 4.5.1/avr-libc 1.7.1:       NO GOOD(size > 2KB)
+
+
 LibUSB Driver
 =============
 http://libusb-win32.sourceforge.net
@@ -16,13 +29,14 @@ Bootloader condition
 Conditions that bootloader comes up:
     1. reset button is pushed(External Reset)
     2. jump from application with MCUSR = 0
+Run application when power it on.
 
 Defined in bootloadercofnig.h:
 static inline void  bootLoaderInit(void)
 {
     // bootloader comes up
-    if (MCUSR == 0 || MCUCSR & (1<<EXTRF)) {
-        MCUCSR = 0;
+    if (MCUSR == 0 || MCUSR & (1<<EXTRF)) {
+        MCUSR = 0;
         return;
     }
     // go to applicaton
